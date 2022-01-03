@@ -1,7 +1,10 @@
+{-# OPTIONS --guardedness #-}
+
 open import Level                      using (Level)
 open import Function                   using (_∘_; id; flip)
 open import Data.Fin     as Fin        using (fromℕ)
-open import Data.Nat     as Nat        using (ℕ; suc; zero; pred; _+_; _⊔_; decTotalOrder)
+open import Data.Nat     as Nat        using (ℕ; suc; zero; pred; _+_; _⊔_)
+open import Data.Nat.Properties        renaming (≤-decTotalOrder to decTotalOrder)
 open import Data.List    as List       using (List; []; _∷_; [_]; concatMap; _++_; length; map)
 open import Data.Vec     as Vec        using (Vec; []; _∷_; _∷ʳ_; reverse; initLast; toList)
 open import Data.Product as Prod       using (∃; _×_; _,_; proj₁; proj₂)
@@ -15,7 +18,7 @@ open import Relation.Nullary           using (Dec; yes; no)
 open import Relation.Nullary.Decidable using (map′)
 open import Relation.Binary            using (module DecTotalOrder)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; sym)
-open import Reflection renaming (Term to AgTerm; Type to AgType; _≟_ to _≟-AgTerm_; bindTC to _>>=_; returnTC to return)
+open import Reflection renaming (Term to AgTerm; Type to AgType; _≟_ to _≟-AgTerm_)
 
 module Auto.Core where
 
@@ -142,7 +145,7 @@ module Auto.Core where
     convert cv d (pi (arg _ _) (abs _ t₂)) = convert cv (suc d) t₂
     convert cv d (lam _ _)     = nothing
     convert cv d (pat-lam _ _) = nothing
-    convert cv d (sort _)      = nothing
+    convert cv d (agda-sort _)      = nothing
     convert cv d unknown       = nothing
     convert cv d (meta _ _)    = nothing
 
@@ -216,11 +219,11 @@ module Auto.Core where
     proof2AgTerm (con (name n) ps) =
       getDefinition n >>=
         λ { (function cs)       → children2AgTerms ps >>= (return ∘ def n)
-          ; (constructor′ d)    → children2AgTerms ps >>= (return ∘ con n) 
+          ; (data-cons d)       → children2AgTerms ps >>= (return ∘ con n) 
           ; (data-type pars cs) → return unknown
-          ; (record′ c)         → return unknown
+          ; (record-type c fs)  → return unknown
           ; axiom               → return unknown
-          ; primitive′          → return unknown }
+          ; prim-fun            → return unknown }
 
     children2AgTerms : List Proof → TC (List (Arg AgTerm))
     children2AgTerms []       = return []
@@ -229,7 +232,7 @@ module Auto.Core where
                               >>= λ cs → return (toArg r ∷ cs)
       where
         toArg : AgTerm → Arg AgTerm
-        toArg = arg (arg-info visible relevant)
+        toArg = arg (arg-info visible (modality relevant quantity-ω))
 
   intros : ℕ → AgTerm → AgTerm
   intros  zero   t = t

@@ -1,3 +1,5 @@
+{-# OPTIONS --guardedness #-}
+
 open import Auto.Core
 open import Function      using (_∘_; _$_)
 open import Data.List     using (_∷_; []; [_]; List; length; takeWhile; reverse; map; foldr; intersperse)
@@ -6,12 +8,12 @@ open import Data.Nat.Show renaming (show to showNat)
 open import Data.Product  using (∃; _,_; _×_)
 open import Data.Unit     using (⊤)
 open import Data.String   using (String; _++_; toList; fromList; unlines)
-open import Data.Char     using (_==_)
-open import Data.Bool     using (Bool; true; false; not; if_then_else_)
+open import Data.Char     using (_≟_)
+open import Data.Bool     using (Bool; true; false; if_then_else_)
 open import Data.Maybe    using (Maybe; just; nothing; maybe′)
 open import Reflection    using (Type; Term; Arg; Name; TC; quoteTC; getType; showName)
                           renaming (bindTC to _>>=_; returnTC to return; unify to unifyTC)
-
+open import Relation.Nullary.Negation using (¬?)
 
 module Auto.Extensible (instHintDB : IsHintDB) where
 
@@ -32,7 +34,7 @@ private
                                   ∷ " " ∷ [ if (fail? d) then "×" else "✓" ])) "" (info d)
       where
         showRuleName : RuleName → String
-        showRuleName (name x) = fromList ∘ reverse ∘ takeWhile (not ∘ (_== '.'))
+        showRuleName (name x) = fromList ∘ reverse ∘ takeWhile (¬? ∘ (_≟ '.'))
                                          ∘ reverse ∘ toList $ showName x
         showRuleName (var x)  = "var" ++ " " ++ showNat x
 

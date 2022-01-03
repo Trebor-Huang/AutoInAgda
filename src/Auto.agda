@@ -1,3 +1,5 @@
+{-# OPTIONS --guardedness #-}
+
 open import Function     using (const; id; _∘_)
 open import Auto.Core    using (IsHintDB; simpleHintDB; Rules; Rule; Ctx)
 open import Data.List    using ([]; [_]; _++_; _∷_; List; downFrom; map; reverse; length)
@@ -17,8 +19,8 @@ open import Auto.Extensible simpleHintDB public using (HintDB; _<<_; ε; dfs; bf
 auto = auto′ dfs
 
 -- This is exported to debug for now
-_>>=_ = bindTC
-infixl 5 _>>=_
+-- _>>=_ = bindTC
+-- infixl 5 _>>=_
 
 inferTypes : List Term → TC (List Type)
 inferTypes [] = returnTC []

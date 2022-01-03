@@ -1,12 +1,14 @@
+{-# OPTIONS --guardedness #-}
+
 open import Level                                 using (_⊔_)
 open import Algebra                               using (module CommutativeSemiring; module DistributiveLattice)
 open import Function                              using (id; const; _∘_; _$_)
-open import Coinduction                           using (∞; ♯_; ♭)
+open import Agda.Builtin.Coinduction              using (∞; ♯_; ♭)
 open import Data.Fin        as Fin                using (Fin; suc; zero)
 open import Data.List       as List               using (List; _∷_; _∷ʳ_; []; [_]; _++_; length; concat; foldr; concatMap; zipWith; reverse; downFrom)
 open import Data.Maybe                            using (Maybe; just; nothing)
-open import Data.Nat                              using (ℕ; suc; zero; _≤_; z≤n; s≤s; decTotalOrder)
-open import Data.Nat.Properties                   using (commutativeSemiring; distributiveLattice)
+open import Data.Nat                              using (ℕ; suc; zero; _≤_; z≤n; s≤s)
+open import Data.Nat.Properties                   using (+-*-commutativeSemiring; ⊓-⊔-distributiveLattice; ≤-decTotalOrder)
 open import Data.Product    as Prod               using (∃; _×_; _,_; proj₁)
 open import Data.Sum                              using (_⊎_; inj₁; inj₂)
 open import Data.Vec        as Vec                using (Vec; _∷_; []; fromList)
@@ -57,9 +59,9 @@ module ProofSearch
 
 
   -- open instances relevant to definitions of difference, inject and raise
-  open CommutativeSemiring commutativeSemiring using (_+_; +-comm)
-  open DistributiveLattice distributiveLattice using (_∧_; ∧-comm)
-  open DecTotalOrder       decTotalOrder       using (total)
+  open CommutativeSemiring +-*-commutativeSemiring using (_+_; +-comm)
+  open DistributiveLattice ⊓-⊔-distributiveLattice using (_∧_; ∧-comm)
+  open DecTotalOrder       ≤-decTotalOrder         using (total)
 
 
   -- compute the difference between two natural numbers, given an
@@ -271,10 +273,11 @@ module ProofSearch
   dfs' (suc k) (n , p) (fail-leaf l)     = []     , [ debug (suc n ∷ p) (suc k) true  l ]
   dfs' (suc k) (n , p) (succ-leaf l x)   = [ x ]  , [ debug (suc n ∷ p) (suc k) false l ]
   dfs' (suc k) (n , p) (node l xs )
-    with foldr  (λ {x ( m , ( ys , zs )) →  let (y , z) = dfs' k (m , suc n ∷ p) (♭ x)
-                                            in  (suc m , (ys ∷ʳ y , zs ∷ʳ z))})
-                (0 , ([] , [])) xs
-  ... | _ , a , b = (concat a , (debug (suc n ∷ p) (suc k) false l) ∷ concat b)
+    with foldr {B = ℕ × List (List _) × List (List _)}
+        (λ {x ( m , ( ys , zs )) →  let (y , z) = dfs' k (m , suc n ∷ p) (♭ x)
+                                    in  (suc m , (ys ∷ʳ y , zs ∷ʳ z))})
+        (0 , ([] , [])) xs
+  ...| _ , a , b = (concat a , (debug (suc n ∷ p) (suc k) false l) ∷ concat b)
 
   dfs : Strategy
   dfs d s = dfs' d (0 , []) s
