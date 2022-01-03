@@ -24,6 +24,7 @@ Some notes:
 
   - the code was written for use with Agda 2.4.2 and [version 0.8.1 of the Agda standard
     library](https://github.com/agda/agda-stdlib/releases/tag/v0.8.1);
+    - it is now modified to use Agda 2.6.2.1 and Standard Library 1.7.1.
 
   - the code is released under an [MIT license](code/LICENSE);
 
